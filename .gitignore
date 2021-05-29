@@ -11,7 +11,9 @@
 /[Mm]emoryCaptures/
 
 /[Aa]ssets/TextMesh Pro/*
+/[Aa]ssets/TextMesh Pro/*.meta
 /[Aa]ssets/HSVPicker/*
+/[Aa]ssets/HSVPicker/*.meta
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta

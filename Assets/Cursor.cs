@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
@@ -12,10 +11,10 @@ public class Cursor : MonoBehaviour
 
     public LayerMask UILayer;
 
-    public enum ToolType { Rectangle }
+    public enum ToolType { None = 0, Rectangle = 1, Wall = 2, }
     public ToolType currentTool;
 
-    [Header("History")]
+    // History
     public int storedActions = 10;
     public List<Action> actionHistory = new List<Action>();
     public enum ActionType { CreateRoom };
@@ -32,12 +31,12 @@ public class Cursor : MonoBehaviour
     }
      
 
-    [Header("Room Customization")]
+    // Room Customization
     public Transform roomsParent;
     public Sprite boxOutlineWide;
     public Material wallMat;
 
-    [Header("Rectangle Tool")]
+    // Rectangle Tool
     public Texture2D boxOutline;
     public Vector2 dragStart = Vector2.negativeInfinity, dragEnd = Vector2.negativeInfinity;
     private Vector2 cursorPos;
@@ -58,32 +57,29 @@ public class Cursor : MonoBehaviour
     {
         MoveCursor();
         CheckMouse();
-        DrawHelper();
     }
 
     void CheckMouse()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            dragStart = cursorPos;
+            if (currentTool == ToolType.Rectangle) dragStart = cursorPos;
         }
 
         if (Input.GetMouseButton(0))
         {
-            dragEnd = cursorPos;
+            if (currentTool == ToolType.Rectangle) dragEnd = cursorPos;
         }
 
         if (Input.GetMouseButtonUp(0))
         {
-            DrawBox();
-            dragStart = Vector2.negativeInfinity;
-            dragEnd = Vector2.negativeInfinity;
+            if (currentTool == ToolType.Rectangle)
+            {
+                DrawBox();
+                dragStart = Vector2.negativeInfinity;
+                dragEnd = Vector2.negativeInfinity;
+            }
         }
-    }
-
-    void DrawHelper()
-    {
-
     }
 
     void DrawBox()
@@ -127,9 +123,14 @@ public class Cursor : MonoBehaviour
         cursorPos = new Vector2(x, y);
     }
 
-    public void ToggleSnapping(Toggle value)
+    public void ToggleSnapping(bool value)
     {
-        snapping = value.isOn;
+        snapping = value;
+    }
+
+    public void SetTool(ToolType tool)
+    {
+        currentTool = tool;
     }
 
     public void ChangeSnapFraction(TMP_Dropdown dropdown)

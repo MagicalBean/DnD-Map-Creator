@@ -6,7 +6,7 @@ using UnityEditor;
 [CustomEditor(typeof(Cursor))]
 public class CursorEditor : Editor
 {
-    bool showHistory = true, showSnapping = true, showRoom = true, showRectTool = true;
+    bool showHistory = true, showSnapping = true, showRoom = true, showTools = true;
 
 
     // Start is called before the first frame update
@@ -54,18 +54,21 @@ public class CursorEditor : Editor
             EditorGUILayout.EndHorizontal();
         }
 
-        EditorGUILayout.LabelField("Tools", EditorStyles.boldLabel);
-    cursor.currentTool = (Cursor.ToolType)EditorGUILayout.EnumPopup("Current Tool", cursor.currentTool);
-        if (showRectTool && cursor.currentTool == Cursor.ToolType.Rectangle)
+        showTools = EditorGUILayout.Foldout(showTools, "Tools");
+        if (showTools)
         {
-            cursor.boxOutline = (Texture2D)EditorGUILayout.ObjectField("Rooms Parent", cursor.boxOutline, typeof(Texture2D), true);
+            cursor.currentTool = (Cursor.ToolType)EditorGUILayout.EnumPopup("Current Tool", cursor.currentTool);
+            if (cursor.currentTool == Cursor.ToolType.Rectangle)
+            {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PrefixLabel("Box Outline");
+                cursor.boxOutline = (Texture2D)EditorGUILayout.ObjectField(cursor.boxOutline, typeof(Texture2D), allowSceneObjects: true);
+                EditorGUILayout.EndHorizontal();
+                cursor.dragStart = EditorGUILayout.Vector2Field("Drag Start", cursor.dragStart);
+                cursor.dragEnd = EditorGUILayout.Vector2Field("Drag End", cursor.dragEnd);
+            }
         }
 
-        //public Texture2D boxOutline;
-        //     public Vector2 dragStart = Vector2.negativeInfinity, dragEnd = Vector2.negativeInfinity;
-        //     private Vector2 cursorPos;
-        //     private Rect wallRect;
-
-        DrawDefaultInspector();
+        // DrawDefaultInspector();
     }
 }
