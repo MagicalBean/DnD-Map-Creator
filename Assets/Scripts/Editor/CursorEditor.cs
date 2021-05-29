@@ -58,14 +58,22 @@ public class CursorEditor : Editor
         if (showTools)
         {
             cursor.currentTool = (Cursor.ToolType)EditorGUILayout.EnumPopup("Current Tool", cursor.currentTool);
+            cursor.dragStart = EditorGUILayout.Vector2Field("Drag Start", cursor.dragStart);
+            cursor.dragEnd = EditorGUILayout.Vector2Field("Drag End", cursor.dragEnd);
             if (cursor.currentTool == Cursor.ToolType.Rectangle)
             {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.PrefixLabel("Box Outline");
                 cursor.boxOutline = (Texture2D)EditorGUILayout.ObjectField(cursor.boxOutline, typeof(Texture2D), allowSceneObjects: true);
+                cursor.boxOutline = (Texture2D)EditorGUILayout.ObjectField(cursor.boxOutline, typeof(Texture2D), allowSceneObjects: true);
                 EditorGUILayout.EndHorizontal();
-                cursor.dragStart = EditorGUILayout.Vector2Field("Drag Start", cursor.dragStart);
-                cursor.dragEnd = EditorGUILayout.Vector2Field("Drag End", cursor.dragEnd);
+            }
+            if (cursor.currentTool == Cursor.ToolType.Door)
+            {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PrefixLabel("Door Prefab");
+                cursor.doorPrefab = (GameObject)EditorGUILayout.ObjectField(cursor.doorPrefab, typeof(GameObject), allowSceneObjects: false);
+                EditorGUILayout.EndHorizontal();
             }
         }
 

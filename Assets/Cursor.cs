@@ -11,23 +11,25 @@ public class Cursor : MonoBehaviour
 
     public LayerMask UILayer;
 
-    public enum ToolType { None = 0, Rectangle = 1, Wall = 2, }
+    public enum ToolType { None = 0, Select = 1, Rectangle = 2, Door = 3, }
     public ToolType currentTool;
 
     // History
     public int storedActions = 10;
     public List<Action> actionHistory = new List<Action>();
-    public enum ActionType { CreateRoom };
+    public List<Action> actionRedo = new List<Action>();
+    
+    public enum ActionType { CreateRoom, CreateDoor };
     public struct Action
     {
-        public Action(ActionType _type, GameObject _object)
+        public Action(ActionType _type, GameObject _object) // For CreateRoom && CreateDoor
         {
             actionType = _type;
             createdObject = _object;
         }
 
-        ActionType actionType;
-        GameObject createdObject;
+        public ActionType actionType;
+        public GameObject createdObject;
     }
      
 
@@ -36,15 +38,17 @@ public class Cursor : MonoBehaviour
     public Sprite boxOutlineWide;
     public Material wallMat;
 
+    public Vector2 dragStart = Vector2.negativeInfinity, dragEnd = Vector2.negativeInfinity;
+
     // Rectangle Tool
     public Texture2D boxOutline;
-    public Vector2 dragStart = Vector2.negativeInfinity, dragEnd = Vector2.negativeInfinity;
     private Vector2 cursorPos;
     private Rect wallRect;
 
-    private Camera mainCam;
+    // Door Tool
+    public GameObject doorPrefab;
 
-    //[Header("Temp")]
+    private Camera mainCam;
 
     // Start is called before the first frame update
     void Start()
@@ -56,19 +60,32 @@ public class Cursor : MonoBehaviour
     void Update()
     {
         MoveCursor();
-        CheckMouse();
+        CheckInput();
     }
 
-    void CheckMouse()
+    void CheckInput()
     {
+        if (IsPointerOverUiElement()) return;
+
+        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown("z"))
+        {
+            HandleUndo();
+        }
+
+        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown("y"))
+        {
+            HandleRedo();
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
-            if (currentTool == ToolType.Rectangle) dragStart = cursorPos;
+            if (currentTool == ToolType.Rectangle || currentTool == ToolType.Door) dragStart = cursorPos;
+            if (currentTool == ToolType.Select) SelectObject(cursorPos);
         }
 
         if (Input.GetMouseButton(0))
         {
-            if (currentTool == ToolType.Rectangle) dragEnd = cursorPos;
+            if (currentTool == ToolType.Rectangle || currentTool == ToolType.Door) dragEnd = cursorPos;
         }
 
         if (Input.GetMouseButtonUp(0))
@@ -79,7 +96,51 @@ public class Cursor : MonoBehaviour
                 dragStart = Vector2.negativeInfinity;
                 dragEnd = Vector2.negativeInfinity;
             }
+
+            if (currentTool == ToolType.Door)
+            {
+                DrawDoor();
+                dragStart = Vector2.negativeInfinity;
+                dragEnd = Vector2.negativeInfinity;
+            }
         }
+    }
+
+    void HandleUndo()
+    {
+        Action lastAction = actionHistory[actionHistory.Count - 1];
+
+        switch (lastAction.actionType)
+        {
+            case ActionType.CreateRoom:
+            case ActionType.CreateDoor:
+                actionHistory.RemoveAt(actionHistory.Count - 1);
+                lastAction.createdObject.SetActive(false);
+                actionRedo.Add(lastAction);
+                break;
+            default: break;
+        }
+    }
+
+    void HandleRedo()
+    {
+        Action lastAction = actionRedo[actionRedo.Count - 1];
+
+        switch (lastAction.actionType)
+        {
+            case ActionType.CreateRoom:
+            case ActionType.CreateDoor:
+                actionRedo.RemoveAt(actionRedo.Count - 1);
+                lastAction.createdObject.SetActive(true);
+                actionHistory.Add(lastAction);
+                break;
+            default: break;
+        }
+    }
+
+    void SelectObject(Vector2 cursorPos)
+    {
+
     }
 
     void DrawBox()
@@ -109,6 +170,39 @@ public class Cursor : MonoBehaviour
         actionHistory.Add(new Action(ActionType.CreateRoom, newBox));
     }
 
+    void DrawDoor()
+    {
+        GameObject door = Instantiate(doorPrefab);
+
+        // Resize box to correct sizes
+        Vector3 startPos = (new Vector3(wallRect.x, wallRect.y));
+        Vector3 endPos = (new Vector3(wallRect.x + wallRect.width, wallRect.y - wallRect.height));
+
+        Vector2 size = new Vector2((dragStart.x - dragEnd.x), dragStart.y - dragEnd.y) / 2;
+
+        Vector3 centerPos = Vector3.one;
+        float xScale, yScale;
+
+        if (Mathf.Abs(size.x) > Mathf.Abs(size.y)) // Horizontal line
+        {
+            door.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
+            xScale = startPos.x - endPos.x;
+            door.transform.localScale = new Vector3(xScale, 2, 1);
+            centerPos = new Vector3(startPos.x + endPos.x, startPos.y * 2, -2) / 2;
+        }
+        if (Mathf.Abs(size.x) < Mathf.Abs(size.y)) // Vertical line
+        {
+            door.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 90));
+            yScale = startPos.y - endPos.y;
+            door.transform.localScale = new Vector3(yScale, 2, 1);
+            centerPos = new Vector3(startPos.x * 2, startPos.y + endPos.y, -2) / 2;
+        }
+
+        door.transform.position = new Vector3(centerPos.x, centerPos.y, -3);
+        actionHistory.Add(new Action(ActionType.CreateDoor, door));
+
+    }
+
     void MoveCursor()
     {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -119,7 +213,7 @@ public class Cursor : MonoBehaviour
             x = Mathf.Round(x * snapFraction) / snapFraction;
             y = Mathf.Round(y * snapFraction) / snapFraction;
         }
-        transform.position = new Vector3(x, y, -1);
+        transform.position = new Vector3(x, y, -3);
         cursorPos = new Vector2(x, y);
     }
 
@@ -165,8 +259,19 @@ public class Cursor : MonoBehaviour
 
         if (topLeftScreen.x != 0)
         {
-            GUI.Box(boxRect, "", style);
-            GUI.Label(new Rect(topLeftScreen.x, Screen.height - topLeftScreen.y - 35, -width, 50), boxLabel, labelStyle);
+            if (currentTool == ToolType.Rectangle)
+            {
+                GUI.Box(boxRect, "", style);
+                GUI.Label(new Rect(topLeftScreen.x, Screen.height - topLeftScreen.y - 35, -width, 50), boxLabel, labelStyle);
+            }
+
+            if (currentTool == ToolType.Door)
+            {
+                if (Mathf.Abs(boxRect.width) > Mathf.Abs(boxRect.height)) // Horizontal line
+                    GUI.Box(new Rect(boxRect.x, boxRect.y - 5, -width, 10), "", style);
+                if (Mathf.Abs(boxRect.width) < Mathf.Abs(boxRect.height)) // Vertical line
+                    GUI.Box(new Rect(boxRect.x - 5, boxRect.y, 10, height), "", style);
+            }
         }
     }
 
