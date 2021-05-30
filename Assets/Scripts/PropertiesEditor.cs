@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class PropertiesEditor : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class PropertiesEditor : MonoBehaviour
 
     [Header("Room Stuff")]
     public GameObject roomStuff;
+    public TMP_InputField nameField, numberField;
 
     public PropertiesObject selectedObj;
 
@@ -45,6 +47,9 @@ public class PropertiesEditor : MonoBehaviour
                     doorScript.isLocked = lockedToggle.state;
                     break;
                 case ObjectTypes.Room:
+                    Room roomScript = selectedObj.obj.GetComponent<Room>();
+                    roomScript.roomName = nameField.text;
+                    roomScript.roomNumber = int.Parse(numberField.text);
                     break;
                 case ObjectTypes.Unknown:
                 default: break;
@@ -66,6 +71,7 @@ public class PropertiesEditor : MonoBehaviour
                 doorStuff.SetActive(false);
                 roomStuff.SetActive(true);
                 selectedObj = new PropertiesObject(gameObj, ObjectTypes.Room);
+                ResetRoomProperties();
                 break;
             default: break;
         }
@@ -76,5 +82,12 @@ public class PropertiesEditor : MonoBehaviour
         Door doorScript = selectedObj.obj.GetComponent<Door>();
         openToggle.state = doorScript.isOpen;
         lockedToggle.state = doorScript.isLocked;
+    }
+
+    void ResetRoomProperties()
+    {
+        Room roomScript = selectedObj.obj.GetComponent<Room>();
+        nameField.text = roomScript.roomName;
+        numberField.text = roomScript.roomNumber.ToString();
     }
 }

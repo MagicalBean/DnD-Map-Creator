@@ -47,11 +47,6 @@ public class CursorEditor : Editor
         showRoom = EditorGUILayout.Foldout(showRoom, "Room Customization");
         if (showRoom)
         {
-            cursor.roomsParent = (Transform)EditorGUILayout.ObjectField("Rooms Parent", cursor.roomsParent, typeof(Transform), true);
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PrefixLabel("Box Outline Wide");
-            cursor.boxOutlineWide = (Sprite)EditorGUILayout.ObjectField(cursor.boxOutlineWide, typeof(Sprite), allowSceneObjects: true);
-            EditorGUILayout.EndHorizontal();
         }
 
         showTools = EditorGUILayout.Foldout(showTools, "Tools");
@@ -62,6 +57,11 @@ public class CursorEditor : Editor
             cursor.dragEnd = EditorGUILayout.Vector2Field("Drag End", cursor.dragEnd);
             if (cursor.currentTool == Cursor.ToolType.Rectangle)
             {
+                cursor.roomsParent = (Transform)EditorGUILayout.ObjectField("Rooms Parent", cursor.roomsParent, typeof(Transform), true);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PrefixLabel("Room Prefab");
+                cursor.roomPrefab = (GameObject)EditorGUILayout.ObjectField(cursor.roomPrefab, typeof(GameObject), allowSceneObjects: false);
+                EditorGUILayout.EndHorizontal();
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.PrefixLabel("Box Outline");
                 cursor.boxOutline = (Texture2D)EditorGUILayout.ObjectField(cursor.boxOutline, typeof(Texture2D), allowSceneObjects: true);

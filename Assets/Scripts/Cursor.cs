@@ -31,16 +31,12 @@ public class Cursor : MonoBehaviour
         public ActionType actionType;
         public GameObject createdObject;
     }
-     
-
-    // Room Customization
-    public Transform roomsParent;
-    public Sprite boxOutlineWide;
-    public Material wallMat;
 
     public Vector2 dragStart = Vector2.negativeInfinity, dragEnd = Vector2.negativeInfinity;
 
     // Rectangle Tool
+    public Transform roomsParent;
+    public GameObject roomPrefab;
     public Texture2D boxOutline;
     private Vector2 cursorPos;
     private Rect wallRect;
@@ -143,15 +139,12 @@ public class Cursor : MonoBehaviour
         }
     }
 
-    List<Vector2> clickedPoints = new List<Vector2>();
     void SelectObject(Vector2 cursorPos)
     {
         RaycastHit2D hit = Physics2D.Raycast(cursorPos, Vector2.zero);
 
         if (hit.collider != null)
         {
-            print(hit.collider.name);
-            clickedPoints.Add(hit.point);
             propertiesEditor.OpenPropertiesFor(hit.collider.gameObject);
         }
     }
@@ -159,19 +152,25 @@ public class Cursor : MonoBehaviour
     void DrawBox()
     {
         // Create box to add
-        GameObject newBox = new GameObject("Room");
+        //         GameObject newBox = new GameObject("Room");
+        //         newBox.transform.localScale = new Vector3(2, 2, 1);
+        //         SpriteRenderer spriteRenderer = newBox.AddComponent<SpriteRenderer>();
+        //         spriteRenderer.sprite = boxOutlineWide;
+        //         spriteRenderer.drawMode = SpriteDrawMode.Sliced;
+        //         newBox.AddComponent<BoxCollider2D>();
+
+        GameObject newBox = Instantiate(roomPrefab);
         newBox.transform.parent = roomsParent;
-        newBox.transform.localScale = new Vector3(2, 2, 1);
-        SpriteRenderer spriteRenderer = newBox.AddComponent<SpriteRenderer>();
-        spriteRenderer.sprite = boxOutlineWide;
-        spriteRenderer.drawMode = SpriteDrawMode.Sliced;
+        newBox.name = "Room";
 
         // Resize box to correct sizes
         Vector3 startPos = (new Vector3(wallRect.x, wallRect.y));
         Vector3 endPos = (new Vector3(wallRect.x + wallRect.width, wallRect.y - wallRect.height));
 
-        Vector3 centerPos = new Vector3(startPos.x + endPos.x, startPos.y + endPos.y, -2) / 2;
+        Vector3 centerPos = new Vector3(startPos.x + endPos.x, startPos.y + endPos.y, 0) / 2;
         Vector2 size = new Vector2((dragStart.x - dragEnd.x), dragStart.y - dragEnd.y) / 2;
+
+        newBox.GetComponent<BoxCollider2D>().size = new Vector2(Mathf.Abs(size.x), Mathf.Abs(size.y));
 
         if (size.x >= 0) size.x += 0.06f; // positive x
         if (size.x <= 0) size.x -= 0.06f; // negative x
@@ -212,7 +211,7 @@ public class Cursor : MonoBehaviour
         }
 
         door.name = "Door";
-        door.transform.position = new Vector3(centerPos.x, centerPos.y, 0);
+        door.transform.position = new Vector3(centerPos.x, centerPos.y, -1);
         actionHistory.Add(new Action(ActionType.CreateDoor, door));
 
     }
@@ -291,11 +290,7 @@ public class Cursor : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Gizmos.color = Color.yellow;
-        foreach (Vector2 point in clickedPoints)
-        {
-            Gizmos.DrawWireSphere(new Vector3(point.x, point.y, -3), 0.1f);
-        }
+
     }
 
     #region PointerOverUI
