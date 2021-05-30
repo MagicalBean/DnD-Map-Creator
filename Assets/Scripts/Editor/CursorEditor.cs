@@ -77,6 +77,7 @@ public class CursorEditor : Editor
             }
         }
 
+        EditorStyles.foldout.fontStyle = FontStyle.Normal;
         // DrawDefaultInspector();
     }
 }

@@ -8,16 +8,17 @@ public class UIController : MonoBehaviour
     public GameObject settingsMenu;
     public Cursor cursor;
 
+    public Image[] toolButtons;
+    public Color selectedColor = new Color(178, 178, 178);
+
     // Start is called before the first frame update
     void Start()
     {
-        
     }
 
     // Update is called once per frame
     void Update()
     {
-
     }
 
     public void ToggleSettingsMenu()
@@ -33,5 +34,10 @@ public class UIController : MonoBehaviour
     public void SetTool(int tool)
     {
         cursor.SetTool((Cursor.ToolType)tool);
+        foreach (Image image in toolButtons)
+        {
+            if (image == toolButtons[tool - 1]) image.color = selectedColor;
+            else image.color = Color.white;
+        }
     }
 }

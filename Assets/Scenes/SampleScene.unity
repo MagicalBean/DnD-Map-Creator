@@ -414,7 +414,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -3552,6 +3552,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   settingsMenu: {fileID: 1071393091}
   cursor: {fileID: 15569170}
+  toolButtons:
+  - {fileID: 1986918048}
+  - {fileID: 1831409247}
+  - {fileID: 343816225}
+  - {fileID: 2102402371}
+  - {fileID: 324166472}
+  selectedColor: {r: 0.69803923, g: 0.69803923, b: 0.69803923, a: 1}
 --- !u!1 &1193918773
 GameObject:
   m_ObjectHideFlags: 0
