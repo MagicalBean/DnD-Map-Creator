@@ -69,6 +69,7 @@ public class CursorEditor : Editor
             }
             if (cursor.currentTool == Cursor.ToolType.Door)
             {
+                cursor.doorsParent = (Transform)EditorGUILayout.ObjectField("Doors Parent", cursor.doorsParent, typeof(Transform), true);
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.PrefixLabel("Door Prefab");
                 cursor.doorPrefab = (GameObject)EditorGUILayout.ObjectField(cursor.doorPrefab, typeof(GameObject), allowSceneObjects: false);

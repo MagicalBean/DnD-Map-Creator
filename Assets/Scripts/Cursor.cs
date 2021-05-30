@@ -42,6 +42,7 @@ public class Cursor : MonoBehaviour
     private Rect wallRect;
 
     // Door Tool
+    public Transform doorsParent;
     public GameObject doorPrefab;
 
     // Select Tool
@@ -179,12 +180,14 @@ public class Cursor : MonoBehaviour
 
         newBox.transform.position = centerPos;
         newBox.GetComponent<SpriteRenderer>().size = size;
+        newBox.GetComponent<Room>().UpdateData();
         actionHistory.Add(new Action(ActionType.CreateRoom, newBox));
     }
 
     void DrawDoor()
     {
         GameObject door = Instantiate(doorPrefab);
+        door.transform.parent = doorsParent;
 
         // Resize box to correct sizes
         Vector3 startPos = (new Vector3(wallRect.x, wallRect.y));
@@ -212,6 +215,7 @@ public class Cursor : MonoBehaviour
 
         door.name = "Door";
         door.transform.position = new Vector3(centerPos.x, centerPos.y, -1);
+        door.GetComponent<Door>().UpdateData();
         actionHistory.Add(new Action(ActionType.CreateDoor, door));
 
     }
