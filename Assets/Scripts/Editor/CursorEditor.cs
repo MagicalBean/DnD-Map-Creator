@@ -65,7 +65,6 @@ public class CursorEditor : Editor
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.PrefixLabel("Box Outline");
                 cursor.boxOutline = (Texture2D)EditorGUILayout.ObjectField(cursor.boxOutline, typeof(Texture2D), allowSceneObjects: true);
-                cursor.boxOutline = (Texture2D)EditorGUILayout.ObjectField(cursor.boxOutline, typeof(Texture2D), allowSceneObjects: true);
                 EditorGUILayout.EndHorizontal();
             }
             if (cursor.currentTool == Cursor.ToolType.Door)

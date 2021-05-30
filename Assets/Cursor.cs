@@ -48,11 +48,16 @@ public class Cursor : MonoBehaviour
     // Door Tool
     public GameObject doorPrefab;
 
+    // Select Tool
+    public GameObject currentSelection;
+
     private Camera mainCam;
+    public PropertiesEditor propertiesEditor;
 
     // Start is called before the first frame update
     void Start()
     {
+        propertiesEditor = GameObject.FindObjectOfType<PropertiesEditor>();
         mainCam = Camera.main;
     }
 
@@ -138,9 +143,17 @@ public class Cursor : MonoBehaviour
         }
     }
 
+    List<Vector2> clickedPoints = new List<Vector2>();
     void SelectObject(Vector2 cursorPos)
     {
+        RaycastHit2D hit = Physics2D.Raycast(cursorPos, Vector2.zero);
 
+        if (hit.collider != null)
+        {
+            print(hit.collider.name);
+            clickedPoints.Add(hit.point);
+            propertiesEditor.OpenPropertiesFor(hit.collider.gameObject);
+        }
     }
 
     void DrawBox()
@@ -198,7 +211,8 @@ public class Cursor : MonoBehaviour
             centerPos = new Vector3(startPos.x * 2, startPos.y + endPos.y, -2) / 2;
         }
 
-        door.transform.position = new Vector3(centerPos.x, centerPos.y, -3);
+        door.name = "Door";
+        door.transform.position = new Vector3(centerPos.x, centerPos.y, 0);
         actionHistory.Add(new Action(ActionType.CreateDoor, door));
 
     }
@@ -272,6 +286,15 @@ public class Cursor : MonoBehaviour
                 if (Mathf.Abs(boxRect.width) < Mathf.Abs(boxRect.height)) // Vertical line
                     GUI.Box(new Rect(boxRect.x - 5, boxRect.y, 10, height), "", style);
             }
+        }
+    }
+
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        foreach (Vector2 point in clickedPoints)
+        {
+            Gizmos.DrawWireSphere(new Vector3(point.x, point.y, -3), 0.1f);
         }
     }
 
