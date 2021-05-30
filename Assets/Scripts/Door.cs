@@ -6,7 +6,7 @@ using UnityEngine;
 public class Door : MonoBehaviour
 {
     public bool isOpen = false, isLocked = false;
-    public Sprite closedSprite, openedSprite;
+    public Sprite closedSprite, openedSprite, lockedSprite;
 
     private SpriteRenderer spriteRenderer;
 
@@ -17,7 +17,18 @@ public class Door : MonoBehaviour
 
     void Update()
     {
-        if (isOpen) spriteRenderer.sprite = openedSprite;
-        else spriteRenderer.sprite = closedSprite;
+        if (isLocked)
+        {
+            spriteRenderer.sprite = lockedSprite;
+            isOpen = false;
+        }
+        else if (isOpen)
+        {
+            spriteRenderer.sprite = openedSprite;
+        }
+        else
+        {
+            spriteRenderer.sprite = closedSprite;
+        }
     }
 }
