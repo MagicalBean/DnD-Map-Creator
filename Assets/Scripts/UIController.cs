@@ -5,11 +5,13 @@ using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
-    public GameObject settingsMenu;
     public Cursor cursor;
+    public SaveLoad saveLoad;
 
     public Image[] toolButtons;
     public Color selectedColor = new Color(178, 178, 178);
+
+    public GameObject fileMenu;
 
     // Start is called before the first frame update
     void Start()
@@ -21,9 +23,25 @@ public class UIController : MonoBehaviour
     {
     }
 
-    public void ToggleSettingsMenu()
+    public void TestButton(string test)
     {
-        settingsMenu.SetActive(!settingsMenu.activeSelf);
+        print(test);
+    }
+
+    public void ToggleMenu(GameObject menu)
+    {
+        menu.SetActive(!menu.activeSelf);
+    }
+
+    public void SaveOpen(bool isSave)
+    {
+        fileMenu.SetActive(false);
+        if (isSave) saveLoad.SerializableScene();
+        else saveLoad.LoadScene();
+    }
+
+    public void ClearButton()
+    {
     }
 
     public void ToggleSnapping(Toggle value)

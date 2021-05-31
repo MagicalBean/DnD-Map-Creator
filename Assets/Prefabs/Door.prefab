@@ -18,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4575572929955237197
 Transform:
   m_ObjectHideFlags: 0
@@ -95,6 +95,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82120903c463ea742bcfb6c378c06eda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  position: {x: 0, y: 0, z: 0}
+  rotation: {x: 0, y: 0, z: 0}
+  scale: {x: 0, y: 0, z: 0}
   isOpen: 0
   isLocked: 0
   closedSprite: {fileID: 21300000, guid: 86ef0a64cf16d0544a6e4432c9dc4d0b, type: 3}

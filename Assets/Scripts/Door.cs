@@ -17,6 +17,7 @@ public class Door : MonoBehaviour
     void OnEnable()
     {
         spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+        UpdateData();
     }
 
     public void UpdateData()

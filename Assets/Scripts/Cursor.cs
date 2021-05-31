@@ -172,6 +172,7 @@ public class Cursor : MonoBehaviour
         Vector2 size = new Vector2((dragStart.x - dragEnd.x), dragStart.y - dragEnd.y) / 2;
 
         newBox.GetComponent<BoxCollider2D>().size = new Vector2(Mathf.Abs(size.x), Mathf.Abs(size.y));
+        newBox.GetComponentsInChildren<SpriteRenderer>()[1].size = new Vector2(Mathf.Abs(size.x) * 2, Mathf.Abs(size.y) * 2);
 
         if (size.x >= 0) size.x += 0.06f; // positive x
         if (size.x <= 0) size.x -= 0.06f; // negative x
@@ -180,7 +181,7 @@ public class Cursor : MonoBehaviour
 
         newBox.transform.position = centerPos;
         newBox.GetComponent<SpriteRenderer>().size = size;
-        newBox.GetComponent<Room>().UpdateData();
+        newBox.SetActive(true);
         actionHistory.Add(new Action(ActionType.CreateRoom, newBox));
     }
 
@@ -215,7 +216,7 @@ public class Cursor : MonoBehaviour
 
         door.name = "Door";
         door.transform.position = new Vector3(centerPos.x, centerPos.y, -1);
-        door.GetComponent<Door>().UpdateData();
+        door.SetActive(true);
         actionHistory.Add(new Action(ActionType.CreateDoor, door));
 
     }

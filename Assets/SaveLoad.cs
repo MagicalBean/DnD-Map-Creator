@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using SFB;
 
 public class SaveLoad : MonoBehaviour
 {
@@ -32,9 +33,12 @@ public class SaveLoad : MonoBehaviour
     #region Load 
     public void LoadScene()
     {
-        if (File.Exists(Application.dataPath + "/Saved Maps/testmap.map"))
+
+        var path = StandaloneFileBrowser.OpenFilePanel("Open Map", Application.dataPath + "/Saved Maps/", "map", false);
+
+        if (File.Exists(path[0]))
         {
-            string saveString = File.ReadAllText(Application.dataPath + "/Saved Maps/testmap.map");
+            string saveString = File.ReadAllText(path[0]);
             
             SerializableClass data = JsonUtility.FromJson<SerializableClass>(saveString);
             CreateDoors(data.doors);
@@ -60,6 +64,7 @@ public class SaveLoad : MonoBehaviour
             Door script = doorObj.GetComponent<Door>();
             script.isOpen = door.isOpen;
             script.isLocked = door.isLocked;
+            doorObj.SetActive(true);
         }
     }
     
@@ -73,9 +78,11 @@ public class SaveLoad : MonoBehaviour
             roomObj.transform.position = room.position;
             roomObj.GetComponent<SpriteRenderer>().size = room.size;
             roomObj.GetComponent<BoxCollider2D>().size = room.colliderSize;
+            roomObj.GetComponentsInChildren<SpriteRenderer>()[1].size = room.floorSize;
             Room script = roomObj.GetComponent<Room>();
             script.roomName = room.roomName;
             script.roomNumber = room.roomNumber;
+            roomObj.SetActive(true);
         }
     }
     #endregion
@@ -103,6 +110,7 @@ public class SaveLoad : MonoBehaviour
             room.position     = rooms[i].position;
             room.size         = rooms[i].size;
             room.colliderSize = rooms[i].colliderSize;
+            room.floorSize    = rooms[i].floorSize;
             room.roomName     = rooms[i].roomName;
             room.roomNumber   = rooms[i].roomNumber;
             serializedRooms[i] = room;
@@ -113,7 +121,9 @@ public class SaveLoad : MonoBehaviour
         serializableClass.rooms = serializedRooms;
 
         string result = JsonUtility.ToJson(serializableClass);
-        File.WriteAllText(Application.dataPath + "/Saved Maps/testmap.map", result);
+
+        var path = StandaloneFileBrowser.SaveFilePanel("Save Map", "", "New Map", "map");
+        File.WriteAllText(path, result);
     }
 
     void GetDataToSeralize()
@@ -135,6 +145,7 @@ public class SaveLoad : MonoBehaviour
         public Vector3 position;
         public Vector2 size;
         public Vector2 colliderSize;
+        public Vector2 floorSize;
         public string roomName;
         public int roomNumber;
     }
@@ -149,4 +160,7 @@ public class SaveLoad : MonoBehaviour
         public bool isLocked;
     }
     #endregion
+
+    #region ClearScene
+    #endregion // I realize this shouldn't be in this class but it fit here well
 }
