@@ -161,6 +161,18 @@ public class SaveLoad : MonoBehaviour
     }
     #endregion
 
-    #region ClearScene
-    #endregion // I realize this shouldn't be in this class but it fit here well
+    public void ResetScene() // this doesn't belong here but it goes here for now
+    {
+        GetDataToSeralize();
+
+        foreach (Door door in doors)
+        {
+            GameObject.Destroy(door.gameObject);
+        }
+
+        foreach (Room room in rooms)
+        {
+            GameObject.Destroy(room.gameObject);
+        }
+    }
 }

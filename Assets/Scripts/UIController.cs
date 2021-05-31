@@ -11,7 +11,7 @@ public class UIController : MonoBehaviour
     public Image[] toolButtons;
     public Color selectedColor = new Color(178, 178, 178);
 
-    public GameObject fileMenu;
+    public GameObject fileMenu, resetConformation;
 
     // Start is called before the first frame update
     void Start()
@@ -42,6 +42,15 @@ public class UIController : MonoBehaviour
 
     public void ClearButton()
     {
+        fileMenu.SetActive(false);
+        resetConformation.SetActive(true);
+    }
+
+    public void ResetConformation(bool reset)
+    {
+        resetConformation.SetActive(false);
+        if (reset)
+            saveLoad.ResetScene();
     }
 
     public void ToggleSnapping(Toggle value)
