@@ -14,24 +14,6 @@ public class Cursor : MonoBehaviour
     public enum ToolType { None = 0, Select = 1, Rectangle = 2, Door = 3, Stairs = 4 }
     public ToolType currentTool;
 
-    // History
-    public int storedActions = 10;
-    public List<Action> actionHistory = new List<Action>();
-    public List<Action> actionRedo = new List<Action>();
-    
-    public enum ActionType { CreateRoom, CreateDoor, CreateStairs, Delete };
-    public struct Action
-    {
-        public Action(ActionType _type, GameObject _object) // For Create Actions
-        {
-            actionType = _type;
-            createdObject = _object;
-        }
-
-        public ActionType actionType;
-        public GameObject createdObject;
-    }
-
     public Vector2 dragStart = Vector2.negativeInfinity, dragEnd = Vector2.negativeInfinity;
 
     // Rectangle Tool
@@ -76,12 +58,12 @@ public class Cursor : MonoBehaviour
 
         if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown("z"))
         {
-            HandleUndo();
+            HistoryManager.HandleUndo();
         }
 
         if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown("y"))
         {
-            HandleRedo();
+            HistoryManager.HandleRedo();
         }
 
         if (Input.GetMouseButtonDown(0))
@@ -117,50 +99,6 @@ public class Cursor : MonoBehaviour
             {
                 readyForThirdPoint = true;
             }
-        }
-    }
-
-    void HandleUndo()
-    {
-        Action lastAction = actionHistory[actionHistory.Count - 1];
-
-        switch (lastAction.actionType)
-        {
-            case ActionType.CreateRoom:
-            case ActionType.CreateDoor:
-            case ActionType.CreateStairs:
-                actionHistory.RemoveAt(actionHistory.Count - 1);
-                lastAction.createdObject.SetActive(false);
-                actionRedo.Add(lastAction);
-                break;
-            case ActionType.Delete:
-                actionHistory.RemoveAt(actionHistory.Count - 1);
-                lastAction.createdObject.SetActive(true);
-                actionRedo.Add(lastAction);
-                break;
-            default: break;
-        }
-    }
-
-    void HandleRedo()
-    {
-        Action lastAction = actionRedo[actionRedo.Count - 1];
-
-        switch (lastAction.actionType)
-        {
-            case ActionType.CreateRoom:
-            case ActionType.CreateDoor:
-            case ActionType.CreateStairs:
-                actionRedo.RemoveAt(actionRedo.Count - 1);
-                lastAction.createdObject.SetActive(true);
-                actionHistory.Add(lastAction);
-                break;
-            case ActionType.Delete:
-                actionRedo.RemoveAt(actionRedo.Count - 1);
-                lastAction.createdObject.SetActive(false);
-                actionHistory.Add(lastAction);
-                break;
-            default: break;
         }
     }
 
@@ -204,11 +142,11 @@ public class Cursor : MonoBehaviour
         size.y = size.y < 0 ? size.y + 0.2f : size.y - 0.2f;
         size.x = size.x < 0 ? size.x + 0.2f : size.x - 0.2f;
 
-        stairs.transform.position = new Vector3(centerPos.x, centerPos.y, -1);
+        stairs.transform.position = new Vector3(centerPos.x, centerPos.y, -2);
         stairs.GetComponent<SpriteRenderer>().size = size;
         stairs.GetComponent<BoxCollider2D>().size = new Vector2(Mathf.Abs(size.x), Mathf.Abs(size.y));
         stairs.SetActive(true);
-        actionHistory.Add(new Action(ActionType.CreateStairs, stairs));
+        HistoryManager.actionHistory.Add(new HistoryManager.Action(HistoryManager.ActionType.CreateStairs, stairs));
 
         dragStart = Vector2.negativeInfinity;
         dragEnd   = Vector2.negativeInfinity;
@@ -248,7 +186,7 @@ public class Cursor : MonoBehaviour
         newBox.transform.position = centerPos;
         newBox.GetComponent<SpriteRenderer>().size = size;
         newBox.SetActive(true);
-        actionHistory.Add(new Action(ActionType.CreateRoom, newBox));
+        HistoryManager.actionHistory.Add(new HistoryManager.Action(HistoryManager.ActionType.CreateRoom, newBox));
     }
 
     void DrawDoor()
@@ -270,20 +208,20 @@ public class Cursor : MonoBehaviour
             door.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
             xScale = startPos.x - endPos.x;
             door.transform.localScale = new Vector3(xScale, 2, 1);
-            centerPos = new Vector3(startPos.x + endPos.x, startPos.y * 2, -4) / 2;
+            centerPos = new Vector3(startPos.x + endPos.x, startPos.y * 2, -6) / 2;
         }
         if (Mathf.Abs(size.x) < Mathf.Abs(size.y)) // Vertical line
         {
             door.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 90));
             yScale = startPos.y - endPos.y;
             door.transform.localScale = new Vector3(yScale, 2, 1);
-            centerPos = new Vector3(startPos.x * 2, startPos.y + endPos.y, -4) / 2;
+            centerPos = new Vector3(startPos.x * 2, startPos.y + endPos.y, -6) / 2;
         }
 
         door.name = "Door";
-        door.transform.position = new Vector3(centerPos.x, centerPos.y, -1);
+        door.transform.position = centerPos;
         door.SetActive(true);
-        actionHistory.Add(new Action(ActionType.CreateDoor, door));
+        HistoryManager.actionHistory.Add(new HistoryManager.Action(HistoryManager.ActionType.CreateDoor, door));
 
     }
 

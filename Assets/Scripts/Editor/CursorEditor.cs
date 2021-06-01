@@ -40,10 +40,6 @@ public class CursorEditor : Editor
             cursor.snapFraction = EditorGUILayout.IntField("Snap Fraction", cursor.snapFraction);
         }
 
-        showHistory = EditorGUILayout.Foldout(showHistory, "History Settings");
-        if (showHistory)
-            cursor.storedActions = EditorGUILayout.IntField("Stored Actions", cursor.storedActions);
-
         showRoom = EditorGUILayout.Foldout(showRoom, "Room Customization");
         if (showRoom)
         {

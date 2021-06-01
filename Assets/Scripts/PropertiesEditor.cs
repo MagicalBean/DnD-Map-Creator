@@ -104,9 +104,10 @@ public class PropertiesEditor : MonoBehaviour
         }
     }
 
-    void OnDeleteClick()
+    public void OnDeleteClick()
     {
         selectedObj.obj.SetActive(false);
+        HistoryManager.actionHistory.Add(new HistoryManager.Action(HistoryManager.ActionType.Delete, selectedObj.obj));
     }
 
     void ResetDoorProperties()
