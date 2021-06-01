@@ -13,9 +13,15 @@ public class PropertiesEditor : MonoBehaviour
     public GameObject roomStuff;
     public TMP_InputField nameField, numberField;
 
+    [Header("Stairs Stuff")]
+    public GameObject stairsStuff;
+    public ToggleSlider directionToggle;
+
     public PropertiesObject selectedObj;
 
-    public enum ObjectTypes { Unknown, Room, Door }
+    public GameObject deleteButton;
+
+    public enum ObjectTypes { Unknown, Room, Door, Stairs }
     public struct PropertiesObject
     {
         public PropertiesObject(GameObject _obj, ObjectTypes _type)
@@ -51,6 +57,10 @@ public class PropertiesEditor : MonoBehaviour
                     roomScript.roomName = nameField.text;
                     roomScript.roomNumber = int.Parse(numberField.text);
                     break;
+                case ObjectTypes.Stairs:
+                    Stair stairsScript = selectedObj.obj.GetComponent<Stair>();
+                    stairsScript.switchDirection = directionToggle.state;
+                    break;
                 case ObjectTypes.Unknown:
                 default: break;
             }
@@ -64,17 +74,39 @@ public class PropertiesEditor : MonoBehaviour
             case "Door":
                 doorStuff.SetActive(true);
                 roomStuff.SetActive(false);
+                stairsStuff.SetActive(false);
+                deleteButton.SetActive(true);
                 selectedObj = new PropertiesObject(gameObj, ObjectTypes.Door);
                 ResetDoorProperties();
                 break;
             case "Room":
                 doorStuff.SetActive(false);
                 roomStuff.SetActive(true);
+                stairsStuff.SetActive(false);
+                deleteButton.SetActive(true);
                 selectedObj = new PropertiesObject(gameObj, ObjectTypes.Room);
                 ResetRoomProperties();
                 break;
-            default: break;
+            case "Stairs":
+                doorStuff.SetActive(false);
+                roomStuff.SetActive(false);
+                stairsStuff.SetActive(true);
+                deleteButton.SetActive(true);
+                selectedObj = new PropertiesObject(gameObj, ObjectTypes.Stairs);
+                ResetStairsProperties();
+                break;
+            default:
+                doorStuff.SetActive(false);
+                roomStuff.SetActive(false);
+                stairsStuff.SetActive(false);
+                deleteButton.SetActive(false);
+                break;
         }
+    }
+
+    void OnDeleteClick()
+    {
+        selectedObj.obj.SetActive(false);
     }
 
     void ResetDoorProperties()
@@ -89,5 +121,11 @@ public class PropertiesEditor : MonoBehaviour
         Room roomScript = selectedObj.obj.GetComponent<Room>();
         nameField.text = roomScript.roomName;
         numberField.text = roomScript.roomNumber.ToString();
+    }
+
+    void ResetStairsProperties()
+    {
+        Stair stairsScript = selectedObj.obj.GetComponent<Stair>();
+        directionToggle.state = stairsScript.switchDirection;
     }
 }

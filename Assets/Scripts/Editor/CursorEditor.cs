@@ -75,6 +75,14 @@ public class CursorEditor : Editor
                 cursor.doorPrefab = (GameObject)EditorGUILayout.ObjectField(cursor.doorPrefab, typeof(GameObject), allowSceneObjects: false);
                 EditorGUILayout.EndHorizontal();
             }
+            if (cursor.currentTool == Cursor.ToolType.Stairs)
+            {
+                cursor.stairsParent = (Transform)EditorGUILayout.ObjectField("Stairs Parent", cursor.stairsParent, typeof(Transform), true);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PrefixLabel("Stairs Prefab");
+                cursor.stairsPrefab = (GameObject)EditorGUILayout.ObjectField(cursor.stairsPrefab, typeof(GameObject), allowSceneObjects: false);
+                EditorGUILayout.EndHorizontal();
+            }
         }
 
         EditorStyles.foldout.fontStyle = FontStyle.Normal;

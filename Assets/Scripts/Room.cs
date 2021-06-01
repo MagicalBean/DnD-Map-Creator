@@ -7,7 +7,6 @@ public class Room : MonoBehaviour
 {
     public Vector3 position;
     public Vector2 size;
-    public Vector2 colliderSize;
     public Vector2 floorSize;
 
     public int roomNumber;
@@ -26,7 +25,6 @@ public class Room : MonoBehaviour
         textMesh = GetComponentInChildren<TextMesh>();
         size = GetComponent<SpriteRenderer>().size;
         position = gameObject.transform.position;
-        colliderSize = GetComponent<BoxCollider2D>().size;
         floorSize = GetComponentsInChildren<SpriteRenderer>()[1].size;
     }
 

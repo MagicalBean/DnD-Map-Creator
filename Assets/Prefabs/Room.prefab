@@ -231,10 +231,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf04e172d7c6e0643937deeb245e9cbe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  position: {x: 0, y: 0, z: 0}
-  size: {x: 0, y: 0}
-  colliderSize: {x: 0, y: 0}
-  floorSize: {x: 0, y: 0}
+  position: {x: 0, y: 2, z: -1}
+  size: {x: 1.06, y: 1.06}
+  colliderSize: {x: 1, y: 1}
+  floorSize: {x: 2, y: 2}
   roomNumber: 0
   roomName: New Room
   textMesh: {fileID: 756736455709143980}
@@ -287,7 +287,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: d8d6fd5d4f7e95d48a469cf6be3cc179, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

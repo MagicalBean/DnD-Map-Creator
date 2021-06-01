@@ -11,7 +11,7 @@ public class Cursor : MonoBehaviour
 
     public LayerMask UILayer;
 
-    public enum ToolType { None = 0, Select = 1, Rectangle = 2, Door = 3, }
+    public enum ToolType { None = 0, Select = 1, Rectangle = 2, Door = 3, Stairs = 4 }
     public ToolType currentTool;
 
     // History
@@ -19,10 +19,10 @@ public class Cursor : MonoBehaviour
     public List<Action> actionHistory = new List<Action>();
     public List<Action> actionRedo = new List<Action>();
     
-    public enum ActionType { CreateRoom, CreateDoor };
+    public enum ActionType { CreateRoom, CreateDoor, CreateStairs, Delete };
     public struct Action
     {
-        public Action(ActionType _type, GameObject _object) // For CreateRoom && CreateDoor
+        public Action(ActionType _type, GameObject _object) // For Create Actions
         {
             actionType = _type;
             createdObject = _object;
@@ -44,6 +44,11 @@ public class Cursor : MonoBehaviour
     // Door Tool
     public Transform doorsParent;
     public GameObject doorPrefab;
+
+    // Stairs Tool
+    public Transform stairsParent;
+    public GameObject stairsPrefab;
+    private bool readyForThirdPoint = false;
 
     // Select Tool
     public GameObject currentSelection;
@@ -83,11 +88,13 @@ public class Cursor : MonoBehaviour
         {
             if (currentTool == ToolType.Rectangle || currentTool == ToolType.Door) dragStart = cursorPos;
             if (currentTool == ToolType.Select) SelectObject(cursorPos);
+            if (currentTool == ToolType.Stairs && readyForThirdPoint) DrawStairs(cursorPos);
+            if (currentTool == ToolType.Stairs && !readyForThirdPoint) dragStart = cursorPos;
         }
 
         if (Input.GetMouseButton(0))
         {
-            if (currentTool == ToolType.Rectangle || currentTool == ToolType.Door) dragEnd = cursorPos;
+            if (currentTool == ToolType.Rectangle || currentTool == ToolType.Door || currentTool == ToolType.Stairs) dragEnd = cursorPos;
         }
 
         if (Input.GetMouseButtonUp(0))
@@ -105,6 +112,11 @@ public class Cursor : MonoBehaviour
                 dragStart = Vector2.negativeInfinity;
                 dragEnd = Vector2.negativeInfinity;
             }
+            
+            if (currentTool == ToolType.Stairs && dragStart != Vector2.negativeInfinity)
+            {
+                readyForThirdPoint = true;
+            }
         }
     }
 
@@ -116,8 +128,14 @@ public class Cursor : MonoBehaviour
         {
             case ActionType.CreateRoom:
             case ActionType.CreateDoor:
+            case ActionType.CreateStairs:
                 actionHistory.RemoveAt(actionHistory.Count - 1);
                 lastAction.createdObject.SetActive(false);
+                actionRedo.Add(lastAction);
+                break;
+            case ActionType.Delete:
+                actionHistory.RemoveAt(actionHistory.Count - 1);
+                lastAction.createdObject.SetActive(true);
                 actionRedo.Add(lastAction);
                 break;
             default: break;
@@ -132,8 +150,14 @@ public class Cursor : MonoBehaviour
         {
             case ActionType.CreateRoom:
             case ActionType.CreateDoor:
+            case ActionType.CreateStairs:
                 actionRedo.RemoveAt(actionRedo.Count - 1);
                 lastAction.createdObject.SetActive(true);
+                actionHistory.Add(lastAction);
+                break;
+            case ActionType.Delete:
+                actionRedo.RemoveAt(actionRedo.Count - 1);
+                lastAction.createdObject.SetActive(false);
                 actionHistory.Add(lastAction);
                 break;
             default: break;
@@ -148,6 +172,48 @@ public class Cursor : MonoBehaviour
         {
             propertiesEditor.OpenPropertiesFor(hit.collider.gameObject);
         }
+    }
+
+    void DrawStairs(Vector2 thirdPoint)
+    {
+        Vector2 size = new Vector2(dragStart.x - dragEnd.x, dragStart.y - dragEnd.y);
+
+        if (size == Vector2.zero) { dragStart = Vector2.negativeInfinity; readyForThirdPoint = false; return; }
+
+        GameObject stairs = Instantiate(stairsPrefab);
+        stairs.transform.parent = stairsParent;
+        stairs.name = "Stairs";
+
+        // Resize box to correct sizes
+        Vector3 startPos = (new Vector3(wallRect.x, wallRect.y));
+        Vector3 endPos = (new Vector3(wallRect.x + wallRect.width, thirdPoint.y));
+
+        Vector3 centerPos = new Vector3(startPos.x + endPos.x, startPos.y + thirdPoint.y, -2) / 2;
+
+        if (Mathf.Abs(size.x) < Mathf.Abs(size.y)) // Horizontal line
+        {
+            centerPos = new Vector3((startPos.x + thirdPoint.x) / 2, endPos.y, -2);
+            size = new Vector2(dragStart.y - dragEnd.y, dragStart.x - thirdPoint.x);
+            stairs.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 90));
+        }
+        else if (Mathf.Abs(size.x) > Mathf.Abs(size.y)) // Vertical line
+        {
+            size = new Vector2(dragStart.x - dragEnd.x, dragStart.y - thirdPoint.y);
+        }
+
+        size.y = size.y < 0 ? size.y + 0.2f : size.y - 0.2f;
+        size.x = size.x < 0 ? size.x + 0.2f : size.x - 0.2f;
+
+        stairs.transform.position = new Vector3(centerPos.x, centerPos.y, -1);
+        stairs.GetComponent<SpriteRenderer>().size = size;
+        stairs.GetComponent<BoxCollider2D>().size = new Vector2(Mathf.Abs(size.x), Mathf.Abs(size.y));
+        stairs.SetActive(true);
+        actionHistory.Add(new Action(ActionType.CreateStairs, stairs));
+
+        dragStart = Vector2.negativeInfinity;
+        dragEnd   = Vector2.negativeInfinity;
+        thirdPoint = Vector2.negativeInfinity;
+        readyForThirdPoint = false;
     }
 
     void DrawBox()
@@ -168,7 +234,7 @@ public class Cursor : MonoBehaviour
         Vector3 startPos = (new Vector3(wallRect.x, wallRect.y));
         Vector3 endPos = (new Vector3(wallRect.x + wallRect.width, wallRect.y - wallRect.height));
 
-        Vector3 centerPos = new Vector3(startPos.x + endPos.x, startPos.y + endPos.y, 0) / 2;
+        Vector3 centerPos = new Vector3(startPos.x + endPos.x, startPos.y + endPos.y, -2) / 2;
         Vector2 size = new Vector2((dragStart.x - dragEnd.x), dragStart.y - dragEnd.y) / 2;
 
         newBox.GetComponent<BoxCollider2D>().size = new Vector2(Mathf.Abs(size.x), Mathf.Abs(size.y));
@@ -204,14 +270,14 @@ public class Cursor : MonoBehaviour
             door.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
             xScale = startPos.x - endPos.x;
             door.transform.localScale = new Vector3(xScale, 2, 1);
-            centerPos = new Vector3(startPos.x + endPos.x, startPos.y * 2, -2) / 2;
+            centerPos = new Vector3(startPos.x + endPos.x, startPos.y * 2, -4) / 2;
         }
         if (Mathf.Abs(size.x) < Mathf.Abs(size.y)) // Vertical line
         {
             door.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 90));
             yScale = startPos.y - endPos.y;
             door.transform.localScale = new Vector3(yScale, 2, 1);
-            centerPos = new Vector3(startPos.x * 2, startPos.y + endPos.y, -2) / 2;
+            centerPos = new Vector3(startPos.x * 2, startPos.y + endPos.y, -4) / 2;
         }
 
         door.name = "Door";
@@ -221,18 +287,24 @@ public class Cursor : MonoBehaviour
 
     }
 
+    Vector2 SnapPosition(Vector2 vector)
+    {
+        float x = vector.x;
+        float y = vector.y;
+        x = Mathf.Round(x * snapFraction) / snapFraction;
+        y = Mathf.Round(y * snapFraction) / snapFraction;
+        return new Vector2(x, y);
+    }
+
     void MoveCursor()
     {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        float x = mousePos.x;
-        float y = mousePos.y;
         if (snapping)
         {
-            x = Mathf.Round(x * snapFraction) / snapFraction;
-            y = Mathf.Round(y * snapFraction) / snapFraction;
+            mousePos = SnapPosition(mousePos);
         }
-        transform.position = new Vector3(x, y, -3);
-        cursorPos = new Vector2(x, y);
+        transform.position = new Vector3(mousePos.x, mousePos.y, -3);
+        cursorPos = new Vector2(mousePos.x, mousePos.y);
     }
 
     public void ToggleSnapping(bool value)
@@ -283,7 +355,7 @@ public class Cursor : MonoBehaviour
                 GUI.Label(new Rect(topLeftScreen.x, Screen.height - topLeftScreen.y - 35, -width, 50), boxLabel, labelStyle);
             }
 
-            if (currentTool == ToolType.Door)
+            if (currentTool == ToolType.Door || currentTool == ToolType.Stairs)
             {
                 if (Mathf.Abs(boxRect.width) > Mathf.Abs(boxRect.height)) // Horizontal line
                     GUI.Box(new Rect(boxRect.x, boxRect.y - 5, -width, 10), "", style);
